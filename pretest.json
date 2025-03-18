@@ -1,0 +1,39 @@
+{
+  "version": 2.0,
+  "questions": [
+    {
+      "question": "What is the size of the timestamps in case of vector logical clocks?",
+      "answers": {
+        "a": "e<sup>2&sdot;ln(n)</sup>",
+        "b": "e<sup>n&sdot;ln(2)</sup>",
+        "c": "e<sup>1&sdot;ln(n)</sup>",
+        "d": "ln(n)"
+      },
+      "explanations": {
+        "a": "Incorrect. Expression evaluates to n<sup>2</sup>. Vector is of length n.",
+        "b": "Incorrect. Expression evaluates to 2<sup>n</sup>. Vector is of length n.",
+        "c": "Correct. Expression evaluates to &Oscr;(n)",
+        "d": "Incorrect. Vector is of length n."
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Vector logical clocks can be used to ",
+      "answers": {
+        "a": "Totally order events by themselves",
+        "b": "Can only establish Partial Ordering",
+        "c": "Can be used along with arbitrary tiebreaks to establish partial ordering",
+        "d": "Can be used to establish causal ordering"
+      },
+      "explanations": {
+        "a": "Incorrect. It is possible for two events to have no causal connection to the other. Ordering is indeterminate in this case",
+        "b": "Incorrect. It is possible for concurrent events to be ordered by another metric to establish total order",
+        "c": "Incorrect. Concurrent events may be arbitrarily ordered for a total ordering",
+        "d": "Correct. Vector clocks establish ordering between causally connected events"
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner"
+    }
+  ]
+}

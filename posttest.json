@@ -1,0 +1,67 @@
+{
+  "version": 2.0,
+  "questions": [
+    {
+      "question": "<img src='./images/VectorQs.png'> <p>What is the time at event A?</p>",
+      "answers": {
+        "a": "[4,6,2,3,8]",
+        "b": "[4,8,2,3,8]",
+        "c": "[4,4,1,3,2]",
+        "d": "[4,6,0,2,4]"
+      },
+      "explanations": {
+        "a": "Incorrect. Look closer at the message from process 2 to 4",
+        "b": "Correct.",
+        "c": "Incorrrect. Take the ticking of each process into account.",
+        "d": "Incorrect. Messages carry the latest version of time <i>after</i> the event has been incremented"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Taking the same diagram from the previous question, is the distributed system consistent?",
+      "answers": {
+        "a": "No",
+        "b": "Yes"
+      },
+      "explanations": {
+        "a": "Incorrect. There are no cycles to be found in this system",
+        "b": "Correct. There are no deadlocks in this system"
+      },
+      "correctAnswer": "b",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "In the diagram from Q1, what is the vector time at B?",
+      "answers": {
+        "a": "[0,6,0,5,16]",
+        "b": "[0,6,0,5,8]",
+        "c": "[0,4,0,5,8]",
+        "d": "[0,8,0,5,16]"
+      },
+      "explanations": {
+        "a": "Incorrect. Messages carry the latest version of time <i>after</i> the event has been incremented.",
+        "b": "Incorrect. Messages carry the latest version of time <i>after</i> the event has been incremented. Also, process 4 ticks at a rate of 4.",
+        "c": "Incorrrect. Take the ticking of each process into account.",
+        "d": "Correct."
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What is the relation between events A and B?",
+      "answers": {
+        "a": "A &parallel; B",
+        "b": "A &rarr; B",
+        "c": "A &larr; B"
+      },
+      "explanations": {
+        "a": "Correct. A &nlt; B, A &ngt; B and A &ne; B",
+        "b": "Incorrect. A[4] &lt; B[4]",
+        "c": "Incorrect. A[0] &gt; B[0]"
+      },
+      "correctAnswer": "a",
+      "difficulty": "beginner"
+    }
+  ]
+}

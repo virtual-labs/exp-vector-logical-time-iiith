@@ -1,0 +1,40 @@
+
+/home/runner/work/exp-vector-logical-time-iiith/exp-vector-logical-time-iiith/experiment/simulation/js/generate.js
+    7:60  warning  'ele' is defined but never used             no-unused-vars
+    7:65  warning  'idx' is defined but never used             no-unused-vars
+  107:9   warning  Expected a 'break' statement before 'case'  no-fallthrough
+
+/home/runner/work/exp-vector-logical-time-iiith/exp-vector-logical-time-iiith/experiment/simulation/js/helper.js
+   87:25  warning  Do not access Object.prototype method 'hasOwnProperty' from target object  no-prototype-builtins
+   94:30  warning  Do not access Object.prototype method 'hasOwnProperty' from target object  no-prototype-builtins
+  113:27  warning  'waiting' is not defined                                                   no-undef
+  138:26  warning  'waiting' is not defined                                                   no-undef
+  141:13  warning  'waiting' is not defined                                                   no-undef
+  144:9   warning  'counter' is not defined                                                   no-undef
+  145:9   warning  'waiting' is not defined                                                   no-undef
+
+/home/runner/work/exp-vector-logical-time-iiith/exp-vector-logical-time-iiith/experiment/simulation/js/main.js
+   208:43  warning  'time' is defined but never used               no-unused-vars
+   290:56  warning  'event' is defined but never used              no-unused-vars
+   298:55  warning  'event' is defined but never used              no-unused-vars
+   358:55  warning  'event' is defined but never used              no-unused-vars
+   573:51  warning  'tim' is defined but never used                no-unused-vars
+   594:51  warning  'tim' is defined but never used                no-unused-vars
+   640:22  warning  'event' is defined but never used              no-unused-vars
+   857:31  warning  'event' is defined but never used              no-unused-vars
+   989:21  warning  'event' is defined but never used              no-unused-vars
+  1057:21  warning  'event' is defined but never used              no-unused-vars
+  1211:52  warning  'event' is defined but never used              no-unused-vars
+  1217:54  warning  'event' is defined but never used              no-unused-vars
+  1225:54  warning  'event' is defined but never used              no-unused-vars
+  1235:23  warning  'event' is defined but never used              no-unused-vars
+  1280:26  warning  'event' is defined but never used              no-unused-vars
+  1297:9   warning  Expected a 'break' statement before 'case'     no-fallthrough
+  1299:9   warning  Expected a 'break' statement before 'default'  no-fallthrough
+  1319:79  warning  'process_number' is defined but never used     no-unused-vars
+  1347:39  warning  'tim' is defined but never used                no-unused-vars
+  1455:39  warning  'event' is defined but never used              no-unused-vars
+  1478:39  warning  'tim' is defined but never used                no-unused-vars
+
+✖ 31 problems (0 errors, 31 warnings)
+
