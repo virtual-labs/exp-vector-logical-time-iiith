@@ -102,7 +102,7 @@ h3.cp {
     display:flex;
     flex-direction: row;
     justify-content: center;
-    align-items: center;   
+    align-items: center;
 }
 
 input[type=number]::-webkit-inner-spin-button,
@@ -127,7 +127,7 @@ input[type=number]
     position: relative;
     height: 35px;
 }
-  
+
 .quantity-button {
     position: relative;
     cursor: pointer;
@@ -161,7 +161,7 @@ input[type=number]
     top: 0;
     border-bottom: 1px solid #536475;
 }
-  
+
 .quantity-button.quantity-down {
     position: absolute;
     bottom: 0px;
@@ -234,7 +234,7 @@ input[type=number]
         opacity: 1;
     }
 }
-  
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -390,15 +390,15 @@ input[type=checkbox].check-label:checked ~ .event-tip {
 }
 
 #cyclespace {
-    display: block; 
-    position: fixed; 
-    z-index: 1; 
+    display: block;
+    position: fixed;
+    z-index: 1;
     left: 0;
     top: 0;
-    width: 100%; 
-    height: 100%; 
-    overflow: auto; 
-    background-color: rgb(0,0,0); 
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
 }
 
@@ -488,7 +488,7 @@ input[type=checkbox].check-label:checked ~ .event-tip {
     border: rgb(79, 79, 79) solid 3px;
     padding: 1vh 2vw;
     border-radius: 4px;
-    
+
     .heading {
         text-align: left;
         margin-top: -1.4em;
@@ -528,7 +528,7 @@ input[type=checkbox].check-label:checked ~ .event-tip {
 .aparam.aparam > label {
     width: fit-content;
 }
-  
+
 .input-number {
     width: 40px;
     font-size: 1.1em;
@@ -536,7 +536,7 @@ input[type=checkbox].check-label:checked ~ .event-tip {
     text-align: center;
     outline: none;
 }
-  
+
 .input-number,
 .input-number-decrement,
 .input-number-increment {
@@ -544,7 +544,7 @@ input[type=checkbox].check-label:checked ~ .event-tip {
     height: 2.5em;
     user-select: none;
 }
-  
+
 .input-number-decrement,
 .input-number-increment {
     display: inline-block;
@@ -573,12 +573,12 @@ input[type=checkbox].check-label:checked ~ .event-tip {
 .input-number-decrement:active {
     background: rgb(150, 23, 23);
 }
-  
+
 .input-number-decrement {
     border-right: none;
     border-radius: 4px 0 0 4px;
 }
-  
+
 .input-number-increment {
     border-left: none;
     border-radius: 0 4px 4px 0;
@@ -606,7 +606,7 @@ input[type=checkbox].check-label:checked ~ .event-tip {
     border-radius: 6px;
     box-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.49), 0 1px 9px -1px #15222e;
 }
-  
+
 .gauge {
     font-family: Arial, Helvetica, sans-serif;
     background: #e7e7e7;
@@ -647,7 +647,7 @@ input[type=checkbox].check-label:checked ~ .event-tip {
     opacity:0.6;
     margin:1.1em 0 0.3em 0;
 }
-  
+
 .needle {
     width: 78px;
     height: 7px;
@@ -664,7 +664,7 @@ input[type=checkbox].check-label:checked ~ .event-tip {
     transform: rotate(15deg);
     transition: transform 1s;
 }
-  
+
 .slice-colors .st {
     position: absolute;
     bottom: 0;
@@ -726,7 +726,7 @@ input[type=text].enquirer:focus {
 
 #speed.clickable {
     box-shadow:
-        0 0 5px 1px #f0f, 
+        0 0 5px 1px #f0f,
         0 0 5px 1px #0ff,
         inset 0 0 60px #ff0;
     transition: all 0.5s ease;
@@ -734,7 +734,7 @@ input[type=text].enquirer:focus {
 
 #speed.clickable:hover {
     box-shadow:
-        0 0 5px 5px #f0f, 
+        0 0 5px 5px #f0f,
         0 0 10px 5px #0ff,
         inset 0 0 60px darkorange;
 }
@@ -761,4 +761,15 @@ input[type=text].enquirer:focus {
 
 #tellspace:has(~ #wrapper2.hidden) .event-tip {
     bottom: 79px;
+}
+
+
+#mobile-message {
+    text-align: center;
+    display: none;
+}
+@media (max-width: 768px) {
+    #mobile-message {
+        display: block;
+    }
 }
