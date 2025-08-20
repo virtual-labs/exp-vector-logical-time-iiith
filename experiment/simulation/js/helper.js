@@ -99,7 +99,7 @@ export function setInputFilter(textbox, inputFilter) {
 }
 
 export class Semaphore {
-  
+    
     constructor(max) {
         this.counter = 0;
         this.max = max;
