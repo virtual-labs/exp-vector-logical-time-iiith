@@ -33,7 +33,7 @@ export function getPosition(el) {
 export function getRelativePosition(el, par) {
     var xPosition = 0;
     var yPosition = 0;
-    while (!(el === par)) {
+    while (el && !(el === par)) {
         if (el == document.body) {
 
             var xScrollPos = el.scrollLeft || document.documentElement.scrollLeft;

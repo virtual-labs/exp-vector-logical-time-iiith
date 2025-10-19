@@ -61,6 +61,8 @@ export class Message {
 }
 
 export function computeVector(inEvents, inMessages, inTicks, result, causalChain) {
+    console.log("computeVector called with inTicks:", inTicks);
+    console.log("Events to process:", inEvents.map(e => `P${e.p+1} at time ${e.t} (id: ${e.id})`));
     result.clear();
     // Removing previous mappings
     causalChain.clear();
@@ -77,7 +79,12 @@ export function computeVector(inEvents, inMessages, inTicks, result, causalChain
     const vectorClocks = new Array(numProcesses);
     for (let i = 0; i < numProcesses; i++) {
         vectorClocks[i] = new Array(numProcesses).fill(0);
+        // Start with 0, first event will increment to d value (which is inTicks[i], but we increment by 1)
+        // So we need to start with (d-1) to get d after first increment
+        vectorClocks[i][i] = inTicks[i] - 1;
     }
+    
+    console.log("Initial vector clocks:", vectorClocks.map((clock, i) => `P${i+1}: [${clock.join(',')}]`).join(', '));
     
     const is_stopped = new Array(inTicks.length).fill(-1);
     // If value of index < 0 => process is running
@@ -110,13 +117,14 @@ export function computeVector(inEvents, inMessages, inTicks, result, causalChain
     while( i > -1 && !cycleDetect) {
         const currentEvent = inEvents[eindx[i]];
         if (is_stopped[currentEvent.p] < 0 || messageQ.has(currentEvent)) {
-            if (is_stopped[currentEvent.p] < 0) {
-                // Increment own clock component for internal event
-                vectorClocks[currentEvent.p][currentEvent.p] += inTicks[currentEvent.p];        
-            }
             
             if (switchboard.has(currentEvent)) {
-                // Checking if from event - sending a message
+                // Sending a message event
+                if (is_stopped[currentEvent.p] < 0) {
+                    // Increment own clock component by 1 for internal event
+                    vectorClocks[currentEvent.p][currentEvent.p] += 1;
+                    console.log(`Send Event P${currentEvent.p+1} at time ${currentEvent.t}: incremented to [${vectorClocks[currentEvent.p].join(',')}]`);        
+                }
                 // Store the current vector clock with the message
                 const messageVector = [...vectorClocks[currentEvent.p]];
                 messageQ.set(switchboard.get(currentEvent), messageVector);
@@ -129,14 +137,14 @@ export function computeVector(inEvents, inMessages, inTicks, result, causalChain
                     // Receiving a message - update vector clock
                     const receivedVector = messageQ.get(currentEvent);
                     
-                    // Update vector clock: take max of each component, then increment own
+                    // Update vector clock: take max of each component, then increment own by 1
                     for (let j = 0; j < numProcesses; j++) {
                         if (j === currentEvent.p) {
-                            // Increment own component
+                            // Increment own component by 1
                             vectorClocks[currentEvent.p][j] = Math.max(
                                 vectorClocks[currentEvent.p][j], 
                                 receivedVector[j]
-                            ) + inTicks[currentEvent.p];
+                            ) + 1;
                         } else {
                             // Take max of other components
                             vectorClocks[currentEvent.p][j] = Math.max(
@@ -145,6 +153,7 @@ export function computeVector(inEvents, inMessages, inTicks, result, causalChain
                             );
                         }
                     }
+                    console.log(`Receive Event P${currentEvent.p+1} at time ${currentEvent.t}: updated to [${vectorClocks[currentEvent.p].join(',')}]`);
                     
                     // Message has been received and time updated
                     causalChain.set(inEvents[eindx[i]], [last_event[currentEvent.p], shouldWait.get(currentEvent)]);
@@ -160,8 +169,11 @@ export function computeVector(inEvents, inMessages, inTicks, result, causalChain
                 }
             }
             else {
-                // Internal event - increment own clock component
-                vectorClocks[currentEvent.p][currentEvent.p] += inTicks[currentEvent.p];
+                // Internal event - increment own clock component by 1
+                if (is_stopped[currentEvent.p] < 0) {
+                    vectorClocks[currentEvent.p][currentEvent.p] += 1;
+                    console.log(`Internal Event P${currentEvent.p+1} at time ${currentEvent.t}: incremented to [${vectorClocks[currentEvent.p].join(',')}]`);        
+                }
                 causalChain.set(inEvents[eindx[i]], last_event[currentEvent.p]);
             }
             
@@ -169,6 +181,7 @@ export function computeVector(inEvents, inMessages, inTicks, result, causalChain
                 // Store the vector clock as a formatted string for display
                 const vectorString = '[' + vectorClocks[currentEvent.p].join(',') + ']';
                 result.set(inEvents[eindx[i]], vectorString);
+                console.log(`Stored result for event P${currentEvent.p+1} at time ${currentEvent.t}: ${vectorString}`);
                 // Adding to results
                 last_event[currentEvent.p] = inEvents[eindx[i]];
                 // Last event to happen on the process

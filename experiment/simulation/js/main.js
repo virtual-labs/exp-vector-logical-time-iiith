@@ -210,9 +210,30 @@ function manageTime(commanded = false, commandedpos = 100) {
     }
 }
 
+let updating = false;
+// Flag to prevent duplicate updateEventTimes calls
+
 // Function for updating times associated with each element
 function updateEventTimes(testing = false) {
-    const cycleDetect = computeScalar(events, messages, ticks, event_time, causal_chain);
+    if (updating) {
+        console.log("updateEventTimes called but already updating, skipping");
+        return false;
+    }
+    updating = true;
+    
+    // Get current tick values from input elements instead of using potentially stale ticks array
+    const currentTicks = [];
+    for (let i = 0; i < nodes.length; i++) {
+        const inputElement = nodes[i].querySelector('.increment');
+        if (inputElement) {
+            currentTicks.push(parseInt(inputElement.value));
+        } else {
+            currentTicks.push(1); // fallback default
+        }
+    }
+    
+    console.log("Current ticks from inputs:", currentTicks, "Values:", currentTicks.map((tick, i) => `P${i+1}:${tick}`).join(', '));
+    const cycleDetect = computeScalar(events, messages, currentTicks, event_time, causal_chain);
     if(!cycleDetect) {
         let i = events.length - 1;
         current_max_z = events.length;
@@ -229,14 +250,33 @@ function updateEventTimes(testing = false) {
                 const toadd = document.createTextNode('e');
                 const toadd8 = document.createElement("span");
                 const toadd2 = document.createElement("sub");
-                const toadd3 = document.createTextNode(events[i].id.toString());
+                
+                // Create process-specific event numbering (e_i,j format)
+                // Sort events by process and then by time to get proper ordering
+                const processId = events[i].p + 1; // Convert to 1-based
+                const eventsForThisProcess = events.filter(e => e.p === events[i].p)
+                    .sort((a, b) => a.t - b.t); // Sort by time for this process
+                
+                // Find the position of current event in this process's timeline
+                let eventCountInProcess = 1;
+                for (let j = 0; j < eventsForThisProcess.length; j++) {
+                    if (eventsForThisProcess[j] === events[i]) {
+                        eventCountInProcess = j + 1;
+                        break;
+                    }
+                }
+                
+                const eventLabel = processId + "," + eventCountInProcess;
+                const toadd3 = document.createTextNode(eventLabel);
                 let toadd4 = null;
                 if(testing) {
                     // Create input field for vector clock format [a,b,c]
                     const toadd6 = document.createElement("input");
                     toadd6.type = "text";
                     toadd6.value = "";
-                    toadd6.placeholder = "[0,0,0]";
+                    // Generate placeholder with correct number of zeros based on number of processes
+                    const placeholderZeros = new Array(nodes.length).fill(0).join(',');
+                    toadd6.placeholder = `[${placeholderZeros}]`;
                     toadd6.classList.add("enquirer-vector");
                     toadd6.style.width = "80px";
                     toadd6.style.fontSize = "0.8em";
@@ -294,6 +334,7 @@ function updateEventTimes(testing = false) {
         }
         // Modifying DOM which might be observable - request timeout from other events       
     }
+    updating = false;
     return cycleDetect;
 }
 
@@ -585,6 +626,17 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
         if(target2.value === "") {
             target2.value = target2.min;
         }
+        // Update ticks array to match input value
+        ticks[target2.dataset.process] = parseInt(target2.value);
+        console.log("Updated ticks array for process", target2.dataset.process, "to:", ticks[target2.dataset.process]);
+    });
+    
+    // Also add an input event listener to keep ticks in sync
+    target2.addEventListener('input', function(event) {
+        if(target2.value !== "") {
+            ticks[target2.dataset.process] = parseInt(target2.value);
+            console.log("Input changed - Updated ticks array for process", target2.dataset.process, "to:", ticks[target2.dataset.process]);
+        }
     });
     // Setting up filter
     
@@ -652,6 +704,15 @@ function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     target.appendChild(toadd);
     // Adding element
     const toadd2 = createEvent(roundedX, parseInt(target.dataset.process));
+    console.log(`Creating event: P${parseInt(target.dataset.process)+1} at time ${roundedX} (id: ${toadd2.id})`);
+    
+    // Check for duplicate events at the same position and process
+    const isDuplicate = events.some(e => e.t === toadd2.t && e.p === toadd2.p);
+    if (isDuplicate) {
+        console.warn(`Duplicate event detected: P${toadd2.p+1} at time ${toadd2.t}, not adding`);
+        return [toadd, null];
+    }
+    
     events.push(toadd2);
 
     if(!noupdate) {
@@ -1025,6 +1086,16 @@ function createNode(genMode, defaultval=indefault) {
         const node_len = nodes.length;
         // The index of this process
 
+        // Create process label (P1, P2, P3, etc.)
+        const processLabel = document.createElement("span");
+        processLabel.className = "process-label";
+        processLabel.textContent = "P" + (node_len + 1);
+        
+        // Create "d =" indicator
+        const dIndicator = document.createElement("span");
+        dIndicator.className = "d-indicator";
+        dIndicator.textContent = " d = ";
+
         const toadd2 = document.createElement("input");
         toadd2.type = "number";
         toadd2.className = "increment";
@@ -1045,8 +1116,10 @@ function createNode(genMode, defaultval=indefault) {
         toadd3.appendChild(toadd4);
         // Adding straight line representing timeline
         
+        toadd.appendChild(processLabel);
+        toadd.appendChild(dIndicator);
         toadd.appendChild(toadd2);
-        // Adding input to timeline
+        // Adding process label, d indicator, and input to timeline
 
         if(genMode) {
             prepareInputbuttons(toadd, toadd2, inmin, inmax);
