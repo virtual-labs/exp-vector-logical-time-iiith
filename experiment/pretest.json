@@ -2,20 +2,20 @@
   "version": 2.0,
   "questions": [
     {
-      "question": "What is the size of the timestamps in case of vector logical clocks?",
+      "question": "In a distributed system with n processes, what is the size of each vector timestamp?",
       "answers": {
-        "a": "e<sup>2&sdot;ln(n)</sup>",
-        "b": "e<sup>n&sdot;ln(2)</sup>",
-        "c": "e<sup>1&sdot;ln(n)</sup>",
-        "d": "ln(n)"
+        "a": "n elements",
+        "b": "2n elements",
+        "c": "n<sup>2</sup> elements",
+        "d": "log(n) elements"
       },
-      "explanations": {
-        "a": "Incorrect. Expression evaluates to n<sup>2</sup>. Vector is of length n.",
-        "b": "Incorrect. Expression evaluates to 2<sup>n</sup>. Vector is of length n.",
-        "c": "Correct. Expression evaluates to &Oscr;(n)",
-        "d": "Incorrect. Vector is of length n."
+       "explanations": {
+        "a": "Correct. Each process maintains one clock value for every process in the system, resulting in n elements",
+        "b": "Incorrect. Only n elements are needed, one for each process",
+        "c": "Incorrect. This would be unnecessarily large and inefficient",
+        "d": "Incorrect. This would not provide enough information about all processes"
       },
-      "correctAnswer": "c",
+      "correctAnswer": "a",
       "difficulty": "beginner"
     },
     {
@@ -53,20 +53,20 @@
       "difficulty": "beginner"
     },
     {
-      "question": "In a distributed system with n processes, what is the size of each vector timestamp?",
+      "question": "When a process sends a message using vector clocks, what should it do with its vector timestamp?",
       "answers": {
-        "a": "n elements",
-        "b": "2n elements",
-        "c": "n<sup>2</sup> elements",
-        "d": "log(n) elements"
+        "a": "Reset it to zero before sending",
+        "b": "Increment its own component, then attach the vector to the message",
+        "c": "Send only its own component value",
+        "d": "Attach the vector without modification"
       },
       "explanations": {
-        "a": "Correct. Each process maintains one clock value for every process in the system, resulting in n elements",
-        "b": "Incorrect. Only n elements are needed, one for each process",
-        "c": "Incorrect. This would be unnecessarily large and inefficient",
-        "d": "Incorrect. This would not provide enough information about all processes"
+        "a": "Incorrect. Resetting would lose all causal history information",
+        "b": "Correct. The process first increments its own clock component, then includes the entire vector in the message",
+        "c": "Incorrect. The complete vector containing all process components must be sent to convey causal information",
+        "d": "Incorrect. The process must increment its own component before sending to reflect the send event"
       },
-      "correctAnswer": "a",
+      "correctAnswer": "b",
       "difficulty": "intermediate"
     },
     {
