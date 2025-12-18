@@ -9,158 +9,237 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/barecss@1.1.1/css/bare.min.css">
 </head>
 <body>
-  <!-- Instructions -->
-  <div class="container">
-  <div class="columns is-centered">
-    <div class="column">
-    <div class="v-collapsible-instruction-container v-instruction-container">
-      <div class="v-collapsible is-size-5">Instructions</div>
-      <div class="v-content" style="text-align: left; padding-left: 10%; padding-right: 10%;">
-        <p><strong>Experimental Steps</strong></p>
-        <p>This experiment can only be run on desktop, as it requires the use of a mouse. For detailed experimental steps, please refer to <strong>Procedure</strong>.</p>
-        <ul style="list-style: disc;">
-          <li>Click on the plus and minus buttons to add and delete processes.</li>
-          <li>After adding a process, the increment in that process' clock can be adjusted.</li>
-          <li>Use the Add/Delete buttons to change modes.</li>
-          <li>Add events.</li>
-          <li>Move the scrollbar to the left and right.</li>
-          <li>Add messages between processes.</li>
-          <li>See event times.</li>
-          <li>Looking at event pop-ups clearly.</li>
-        </ul>
-        <br>
-        <p><strong>Observations</strong></p>
-        <ul style="list-style: disc;">
-          <li>
-            <strong>Consistency</strong>
-            <ul style="list-style: circle;">
-              <li>The circumstances leading to an inconsistent state involve a deadlock on sending and receiving messages.</li>
+  <!-- Instructions Modal -->
+  <div id="instructionsModal" class="instructions-modal">
+    <div class="instructions-modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="header-content">
+          <div class="header-icon">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <div class="header-text">
+            <h2>Instructions</h2>
+            <p>Learn how to use the Vector Logical Clock Simulator</p>
+          </div>
+        </div>
+        <button class="modal-close" id="closeInstructions">
+          <svg class="w-7 h-7" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <div class="instructions-grid">
+          <!-- Interactive Controls Card -->
+          <div class="instruction-card">
+            <div class="instruction-icon blue">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+              </svg>
+            </div>
+            <h3 class="instruction-title">Interactive Controls</h3>
+            <ul class="instruction-list">
+              <li><strong>Process Management:</strong> Use the plus (+) and minus (−) buttons to add and delete processes in the simulation.</li>
+              <li><strong>Clock Increment:</strong> After adding a process, you can adjust the clock increment value for that process.</li>
+              <li><strong>Mode Toggle:</strong> Switch between Add and Delete modes using the respective buttons.</li>
+              <li><strong>Event Addition:</strong> Click to add events on the timeline of each process.</li>
+              <li><strong>Timeline Navigation:</strong> Use the scrollbar to move left and right through time.</li>
+              <li><strong>Message Creation:</strong> Add messages between different processes to observe their effects.</li>
             </ul>
-          </li>
-          <li>
-            <strong>Vector time</strong>
-            <ul style="list-style: circle;">
-              <li>Working of the vector logical clock can be learned by adjusting events and messages.</li>
+          </div>
+
+          <!-- Simulation Features Card -->
+          <div class="instruction-card">
+            <div class="instruction-icon green">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <h3 class="instruction-title">Simulation Features</h3>
+            <ul class="instruction-list">
+              <li><strong>Event Visualization:</strong> See event times and their relationships clearly displayed.</li>
+              <li><strong>Event Popups:</strong> Hover over events to view detailed timing information and clock values.</li>
+              <li><strong>Causal Relationships:</strong> Visual representation of message passing and event ordering.</li>
+              <li><strong>Test Mode:</strong> Challenge yourself with generated scenarios to test your understanding.</li>
             </ul>
-          </li>
-          <li>
-            <strong>Concurrency</strong>
-            <ul style="list-style: circle;">
-              <li>Vector logical time is sufficient to determine the caussal relation between events.</li>
+          </div>
+
+          <!-- Vector Logical Clock Concepts Card -->
+          <div class="instruction-card">
+            <div class="instruction-icon blue">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="instruction-title">Vector Logical Clock</h3>
+            <ul class="instruction-list">
+              <li><strong>Clock Rules:</strong> Each process maintains a vector clock that tracks the logical time across all processes.</li>
+              <li><strong>Message Sending:</strong> When sending a message, the process includes its current vector clock.</li>
+              <li><strong>Message Receiving:</strong> On receiving a message, update vector clock: clock[i] = max(local_clock[i], message_clock[i]) for all i, then increment own clock.</li>
+              <li><strong>Event Ordering:</strong> Vector clocks provide a partial ordering of events - one event precedes another if its vector clock is component-wise less than or equal.</li>
             </ul>
-          </li>
-        </ul>
+          </div>
+
+          <!-- Learning Objectives Card -->
+          <div class="instruction-card">
+            <div class="instruction-icon orange">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+            </div>
+            <h3 class="instruction-title">Key Observations</h3>
+            <ul class="instruction-list">
+              <li><strong>Consistency:</strong> Understand how inconsistent states can occur due to message deadlocks in distributed systems.</li>
+              <li><strong>Concurrency:</strong> Vector clocks help determine when events are concurrent - when neither vector clock dominates the other.</li>
+              <li><strong>Vector Time:</strong> Learn how vector clocks provide better causal ordering compared to scalar logical clocks.</li>
+              <li><strong>Distributed Systems:</strong> Gain insights into maintaining causality and ordering in distributed environments.</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
-    </div>
-    <div class="column" id="mobile-message" txt="c">
-      🖥️ This experiment can only be run on desktop!
-    </div>
-  </div>
   </div>
 
-  <main>
-    <div id = "tellspace">
-        <div id="simspace">
-          <svg id="messagespace">
-          </svg>
-        </div>
-    </div>
-    <div id = "buttonspace">
-      <div class="wrapperalike">
-        <h3 class="cp">Action on clicking on events and messages:</h3>
-        <div id="eventadd">
-          <button id="add">Add</button>
-          <button id="subtract">Delete</button>
-        </div>
-      </div>
-      <div class="wrapperalike">
-        <h3 class="cp">Change process count:</h3>
-        <div id="processoradd">
-          <button id="plus">+</button>
-          <button id="minus">&#8211;</button>
-        </div>
-      </div>
-      <div id="testcontrols">
-        <div id="speed" class="difficulty">
-          <div class="gauge min-scaled">
-            <div class="slice-colors">
-              <div class="st slice-item"></div>
-              <div class="st slice-item"></div>
-              <div class="st slice-item"></div>
+  <div class="mobile-warning" id="mobile-message">
+    🖥️ This experiment can only be run on desktop!
+  </div>
+
+  <!-- Main Container with Blue-Purple Background -->
+  <div class="main-container">
+    <!-- Content Container -->      
+      <!-- Left Control Panel Container -->
+      <div class="left-container">
+        <div class="control-panel">
+          <button id="instructionsBtn" class="btn btn-info">🎯 Instructions</button>
+          
+          <div class="wrapperalike">
+            <h3 class="cp">Action on clicking on events and messages:</h3>
+            <div id="eventadd">
+              <button id="add">Add</button>
+              <button id="subtract">Delete</button>
             </div>
-            <div class="needle"></div>
-            <div class="gauge-center">
-              <div class="label">Difficulty</div>
+          </div>
+          
+          <div class="wrapperalike">
+            <h3 class="cp">Change process count:</h3>
+            <div id="processoradd">
+              <button id="plus">+</button>
+              <button id="minus">&#8211;</button>
+            </div>
+          </div>
+          
+          <div id="testcontrols">
+            <div id="speed" class="difficulty">
+              <div class="gauge min-scaled">
+                <div class="slice-colors">
+                  <div class="st slice-item"></div>
+                  <div class="st slice-item"></div>
+                  <div class="st slice-item"></div>
+                </div>
+                <div class="needle"></div>
+                <div class="gauge-center">
+                  <div class="label">Difficulty</div>
+                </div>
+              </div>
+            </div>
+            <div id="testspace">
+              <h3 class="cp">Ready to check your understanding?</h3>
+              <div>
+                <button id="mode">Test!</button>
+              </div>
+              <div id="wrapper" class="hidden">
+                <button id="check">Check my Answers</button>
+              </div>
+            </div>
+          </div>
+          
+          <div id="antiwrapper">
+            <div id="generatespace">
+              <div class="header-border">
+                <h2 class="heading"><span>Generation Parameters</span></h2>
+                <div id="params">
+                  <div class="aparam">
+                    <label for="processors-gen"><h4>Number of processors:</h4></label>
+                    <div class="input-controls">
+                      <span class="input-number-decrement">–</span>
+                      <input class="input-number" id="processors-gen" type="number" value="3" min="3" max="5">
+                      <span class="input-number-increment">+</span>
+                    </div>
+                  </div>
+                  <div class="aparam">
+                    <label for="events-gen"><h4>Number of events:</h4></label>
+                    <div class="input-controls">
+                      <span class="input-number-decrement">–</span>
+                      <input class="input-number" id="events-gen" type="number" value="7" min="7" max="14">
+                      <span class="input-number-increment">+</span>
+                    </div>
+                  </div>
+                  <div class="aparam">
+                    <label for="messages-gen"><h4>Number of messages:</h4></label>
+                    <div class="input-controls">
+                      <span class="input-number-decrement">–</span>
+                      <input class="input-number" id="messages-gen" type="number" value="4" min="4" max="10">
+                      <span class="input-number-increment">+</span>
+                    </div>
+                  </div>
+                  <button id="ordergenerate">Generate!</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div id="testspace">
-          <h3 class="cp">Ready to check your understanding?</h3>
-          <div>
-            <button id="mode">Test!</button>
+      </div>
+
+      <!-- Right Content Container -->
+      <div class="right-container">
+        <!-- Tellspace Container -->
+        <div class="tellspace-container">
+          <div id="tellspace">
+            <div id="simspace">
+              <svg id="messagespace"></svg>
+            </div>
           </div>
-          <div id="wrapper" class="hidden">
-            <button id="check">Check my Answers</button>
+        </div>
+        
+        <!-- Wrapper2 Container -->
+        <div class="wrapper2-container">
+          <div id="wrapper2">
+            <div id="displayspace">
+              <svg id="causalspace">
+                <filter id='noiseFilter'>
+                  <feTurbulence
+                    type='fractalNoise'
+                    baseFrequency='0.65'
+                    numOctaves='3'
+                    stitchTiles='stitch'/>
+                  </filter>
+                  <rect id="pinboard" filter='url(#noiseFilter)'/>
+                <g id="causalgroup"></g>
+              </svg>
+            </div>
           </div>
         </div>
       </div>
+      
+  </div>
+
+  <div id="cyclespace" class="hidden">
+    <div id="iscycle">
+      Inconsistent state - resetting to last consistent state
     </div>
-    <div id = "cyclespace" class = "hidden">
-      <div id = "iscycle">
-        Inconsistent state - resetting to last consistent state
-      </div>
-    </div>
-    <div id="antiwrapper">
-      <div id="generatespace">
-        <div class="header-border">
-          <h2 class="heading"><span>Generation Parameters</span></h2>
-          <div id="params">
-            <div class="aparam">
-              <label for="processors-gen"><h4>Number of pocessors:</h4></label>
-              <span class="input-number-decrement">–</span>
-              <input class="input-number" id="processors-gen" type="number" value="3" min="3" max="5">
-              <span class="input-number-increment">+</span>
-            </div>
-            <div class="aparam">
-              <label for="events-gen"><h4>Number of events:</h4></label>
-              <span class="input-number-decrement">–</span>
-              <input class="input-number" id="events-gen" type="number" value="7" min="7" max="14">
-              <span class="input-number-increment">+</span>
-            </div>
-            <div class="aparam">
-              <label for="messages-gen"><h4>Number of messages:</h4></label>
-              <span class="input-number-decrement">–</span>
-              <input class="input-number" id="messages-gen" type="number" value="4" min="4" max="10">
-              <span class="input-number-increment">+</span>
-            </div>
-            <button id="ordergenerate">Generate!</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="wrapper2">
-      <div id="displayspace">
-        <svg id = "causalspace">
-          <filter id='noiseFilter'>
-            <feTurbulence
-              type='fractalNoise'
-              baseFrequency='0.65'
-              numOctaves='3'
-              stitchTiles='stitch'/>
-            </filter>
-            <rect id="pinboard" filter='url(#noiseFilter)'/>
-          <g id = "causalgroup">
-          </g>
-        </svg>
-      </div>
-    </div>
-  </main>
+  </div>
+
 
   <!-- Add JS at the bottom of HTML file -->
   <script src="https://cdn.jsdelivr.net/gh/virtual-labs/virtual-style@0.0.8-b/js/script.js"></script>
   <script src="./js/helper.js" type="module"></script>
   <script src="./js/simulation.js" type="module"></script>
+  <script src="./js/generate.js" type="module"></script>
   <script src="./js/main.js" type="module"></script>
 </body>
 </html>

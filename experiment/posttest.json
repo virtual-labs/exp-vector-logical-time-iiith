@@ -2,66 +2,157 @@
   "version": 2.0,
   "questions": [
     {
-      "question": "<img src='./images/VectorQs.png'> <p>What is the time at event A?</p>",
+      "question": "In a vector clock system with 3 processes, if process P1 has vector [2,1,0] and receives a message from process P2 with vector [1,3,1], what will P1's vector be after processing this message?",
       "answers": {
-        "a": "[4,6,2,3,8]",
-        "b": "[4,8,2,3,8]",
-        "c": "[4,4,1,3,2]",
-        "d": "[4,6,0,2,4]"
+        "a": "[2,3,1]",
+        "b": "[3,4,1]",
+        "c": "[3,3,1]",
+        "d": "[2,4,1]"
       },
       "explanations": {
-        "a": "Incorrect. Look closer at the message from process 2 to 4",
-        "b": "Correct.",
-        "c": "Incorrrect. Take the ticking of each process into account.",
-        "d": "Incorrect. Messages carry the latest version of time <i>after</i> the event has been incremented"
+        "a": "Incorrect. P1 must increment its own component after receiving the message",
+        "b": "Correct. P1 takes max of each component: [max(2,1), max(1,3), max(0,1)] = [2,3,1], then increments own component to get [3,3,1], assuming increment = 1",
+        "c": "Incorrect. This assumes increment=1, but the correct answer should show the increment step",
+        "d": "Incorrect. P1 should take max(1,3)=3 for the second component"
       },
       "correctAnswer": "b",
       "difficulty": "beginner"
     },
     {
-      "question": "Taking the same diagram from the previous question, is the distributed system consistent?",
+      "question": "When a process performs a local event (not involving message passing), what changes in its vector clock?",
       "answers": {
-        "a": "No",
-        "b": "Yes"
+        "a": "All components are incremented",
+        "b": "Only its own component is incremented",
+        "c": "The vector remains unchanged",
+        "d": "All components are set to the maximum value"
       },
       "explanations": {
-        "a": "Incorrect. There are no cycles to be found in this system",
-        "b": "Correct. There are no deadlocks in this system"
+        "a": "Incorrect. Only the process's own component changes during local events",
+        "b": "Correct. For local events, only the process's own clock component is incremented by its tick value",
+        "c": "Incorrect. Local events must advance time to maintain monotonicity",
+        "d": "Incorrect. This would not preserve the semantic meaning of other processes' time"
       },
       "correctAnswer": "b",
       "difficulty": "beginner"
     },
     {
-      "question": "In the diagram from Q1, what is the vector time at B?",
+      "question": "In the vector clock algorithm, what information does a process include when sending a message?",
       "answers": {
-        "a": "[0,6,0,5,16]",
-        "b": "[0,6,0,5,8]",
-        "c": "[0,4,0,5,8]",
-        "d": "[0,8,0,5,16]"
+        "a": "Only its own clock value",
+        "b": "Its complete current vector timestamp",
+        "c": "The difference between current and previous vector",
+        "d": "Only the components that have changed"
       },
       "explanations": {
-        "a": "Incorrect. Messages carry the latest version of time <i>after</i> the event has been incremented.",
-        "b": "Incorrect. Messages carry the latest version of time <i>after</i> the event has been incremented. Also, process 4 ticks at a rate of 4.",
-        "c": "Incorrrect. Take the ticking of each process into account.",
-        "d": "Correct."
+        "a": "Incorrect. The full vector is needed to convey complete causal information",
+        "b": "Correct. The sending process includes its complete vector timestamp with the message to convey full causal history",
+        "c": "Incorrect. Differences would not provide complete causal information",
+        "d": "Incorrect. All components are needed to determine causal relationships properly"
       },
-      "correctAnswer": "d",
+      "correctAnswer": "b",
       "difficulty": "beginner"
     },
     {
-      "question": "What is the relation between events A and B?",
+      "question": "Consider two events with vectors A=[3,2,4] and B=[2,3,4]. What is the causal relationship between these events?",
       "answers": {
-        "a": "A &parallel; B",
-        "b": "A &rarr; B",
-        "c": "A &larr; B"
+        "a": "A happens before B",
+        "b": "B happens before A", 
+        "c": "A and B are concurrent",
+        "d": "A and B are identical"
       },
       "explanations": {
-        "a": "Correct. A &nlt; B, A &ngt; B and A &ne; B",
-        "b": "Incorrect. A[4] &lt; B[4]",
-        "c": "Incorrect. A[0] &gt; B[0]"
+        "a": "Incorrect. A[1]=2 < B[1]=3, so A does not happen before B",
+        "b": "Incorrect. B[0]=2 < A[0]=3, so B does not happen before A", 
+        "c": "Correct. Since neither vector dominates the other (A[0]>B[0] but A[1]<B[1]), the events are concurrent",
+        "d": "Incorrect. The vectors have different values"
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "In a distributed system running vector clocks, what does it mean when a process cannot proceed with event processing?",
+      "answers": {
+        "a": "The system has detected a deadlock cycle",
+        "b": "The process is waiting for a message to arrive before updating its clock",
+        "c": "The vector clock has reached its maximum value",
+        "d": "Another process has failed"
+      },
+      "explanations": {
+        "a": "Correct. When the simulation cannot process any more events in an iteration, it indicates a cycle/deadlock in message dependencies",
+        "b": "While processes may wait for messages, this describes normal blocking, not the inability to proceed",
+        "c": "Incorrect. Vector clocks can grow indefinitely in theory",
+        "d": "Incorrect. Process failure would be handled differently and wouldn't necessarily stop processing"
       },
       "correctAnswer": "a",
-      "difficulty": "beginner"
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "What is the purpose of the 'tick' or increment value in vector clock implementations?",
+      "answers": {
+        "a": "To synchronize with physical time",
+        "b": "To differentiate between processes with different execution speeds",
+        "c": "To prevent integer overflow",
+        "d": "To compress the vector size"
+      },
+      "explanations": {
+        "a": "Incorrect. Vector clocks are logical and independent of physical time",
+        "b": "Correct. Different tick values allow modeling processes that execute at different rates or granularities",
+        "c": "Incorrect. Tick values don't prevent overflow; they affect the rate of increment",
+        "d": "Incorrect. Tick values don't affect vector size compression"
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "In the context of distributed consistency, why might a system show inconsistent states even with vector clocks?",
+      "answers": {
+        "a": "Vector clocks are inherently unreliable",
+        "b": "Message passing creates temporary states where not all causal dependencies have been resolved",
+        "c": "The vector clock algorithm has bugs",
+        "d": "Physical clock drift affects vector clocks"
+      },
+      "explanations": {
+        "a": "Incorrect. Vector clocks are reliable for their intended purpose",
+        "b": "Correct. During message transmission and processing, there are windows where causal dependencies haven't been fully propagated, leading to temporarily inconsistent global states",
+        "c": "Incorrect. Well-implemented vector clock algorithms are correct",
+        "d": "Incorrect. Vector clocks are independent of physical time"
+      },
+      "correctAnswer": "b",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "What is the computational complexity of determining the causal relationship between two events using their vector timestamps?",
+      "answers": {
+        "a": "O(1) - constant time",
+        "b": "O(log n) - logarithmic in number of processes",
+        "c": "O(n) - linear in number of processes", 
+        "d": "O(n²) - quadratic in number of processes"
+      },
+      "explanations": {
+        "a": "Incorrect. Comparison requires examining all components",
+        "b": "Incorrect. All components must be compared, not just a logarithmic subset",
+        "c": "Correct. Comparing two vector timestamps requires examining all n components to determine the relationship (≤, ≥, or concurrent)",
+        "d": "Incorrect. Only a single pass through both vectors is needed"
+      },
+      "correctAnswer": "c",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "In a vector clock system, under what conditions can we guarantee that all events in the system can be assigned a total ordering?",
+      "answers": {
+        "a": "When all processes use the same tick increment",
+        "b": "When we use additional tie-breaking rules (like process IDs) for concurrent events",
+        "c": "When the system has no message passing",
+        "d": "When all clocks are synchronized to physical time"
+      },
+      "explanations": {
+        "a": "Incorrect. Uniform tick increments don't eliminate concurrent events",
+        "b": "Correct. Vector clocks provide partial ordering; total ordering requires additional mechanisms to order concurrent events",
+        "c": "Incorrect. Without messages, events are already totally ordered within each process, but global total order still needs tie-breaking",
+        "d": "Incorrect. Vector clocks are logical and don't depend on physical time synchronization"
+      },
+      "correctAnswer": "b",
+      "difficulty": "advanced"
     }
   ]
 }

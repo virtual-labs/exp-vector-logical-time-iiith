@@ -1,6 +1,6 @@
 "use strict";
 
-import { computeVector, createEvent, createMessage } from "./simulation.js";
+import { computeScalar, createEvent, createMessage } from "./simulation.js";
 import { isElement, getPosition, getRelativePosition, rotateLine, lineParallel, setInputFilter, Semaphore } from "./helper.js";
 import { generateTest } from "./generate.js";
 
@@ -36,7 +36,7 @@ const checkanswerswrap = document.getElementById("wrapper");
 // Wraps around button for display purposes
 
 const displaywrap = document.getElementById("wrapper2");
-// Wraps around displayspace
+// Wraps around displayspacw
 
 const nodes = [];
 // An array of all nodes in the distributed system
@@ -183,14 +183,6 @@ function mysteryAdjustment(curwidth, vw, max_events_offset) {
 // Function is used to adjust time
 function manageTime(commanded = false, commandedpos = 100) {
     if (!ticking) {
-        const scrollwidth = tellspace.scrollWidth;
-        const clientwidth = tellspace.clientWidth;
-        // Getting real width and displayed width in pixels
-
-        const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
-
-        const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
-        // Getting current width
         if(commanded) {
             ticking = true;
             const a_observ = new ResizeObserver((entries) => {
@@ -213,32 +205,35 @@ function manageTime(commanded = false, commandedpos = 100) {
                 ticking = false;
             });
         }
-        else {
-            window.requestAnimationFrame(function() {
-                // If a scrollbar is required
-                if(scrollwidth > clientwidth) {
-                    if(scrollwidth - clientwidth <= tellspace.scrollLeft + 1) {
-                        // If the scrollbar is at max right, add some more space
-                        tellspace.scrollTo(scrollwidth - clientwidth - 4, 0);
-                        simspace.style.width = String(curwidth + 5) + 'px';
-                    }
-                    else if (tellspace.scrollLeft <= 1 && curwidth - 5 >= clientwidth && mysteryAdjustment(curwidth, vw, max_events_offset)) {
-                        // If the scrollbar is at max left delete some space
-                        // Don't let the space get too small or shrink beyond an event
-                        tellspace.scrollTo(4, 0);
-                        simspace.style.width = String(curwidth - 5) + 'px';
-                    }
-                }
-                ticking = false;
-            });
-            ticking = true;
-        }
+        // Removed auto-expansion logic - tellspace will use scrollbars instead
+        ticking = false;
     }
 }
 
+let updating = false;
+// Flag to prevent duplicate updateEventTimes calls
+
 // Function for updating times associated with each element
 function updateEventTimes(testing = false) {
-    const cycleDetect = computeVector(events, messages, ticks, event_time, causal_chain);
+    if (updating) {
+        console.log("updateEventTimes called but already updating, skipping");
+        return false;
+    }
+    updating = true;
+    
+    // Get current tick values from input elements instead of using potentially stale ticks array
+    const currentTicks = [];
+    for (let i = 0; i < nodes.length; i++) {
+        const inputElement = nodes[i].querySelector('.increment');
+        if (inputElement) {
+            currentTicks.push(parseInt(inputElement.value));
+        } else {
+            currentTicks.push(1); // fallback default
+        }
+    }
+    
+    console.log("Current ticks from inputs:", currentTicks, "Values:", currentTicks.map((tick, i) => `P${i+1}:${tick}`).join(', '));
+    const cycleDetect = computeScalar(events, messages, currentTicks, event_time, causal_chain);
     if(!cycleDetect) {
         let i = events.length - 1;
         current_max_z = events.length;
@@ -255,103 +250,70 @@ function updateEventTimes(testing = false) {
                 const toadd = document.createTextNode('e');
                 const toadd8 = document.createElement("span");
                 const toadd2 = document.createElement("sub");
-                const toadd3 = document.createTextNode(events[i].id.toString());
-                const toadd5 = document.createElement("sup");
-                const toadd6 = document.createTextNode("T");
-                toadd5.appendChild(toadd6);
+                
+                // Create process-specific event numbering (e_i,j format)
+                // Sort events by process and then by time to get proper ordering
+                const processId = events[i].p + 1; // Convert to 1-based
+                const eventsForThisProcess = events.filter(e => e.p === events[i].p)
+                    .sort((a, b) => a.t - b.t); // Sort by time for this process
+                
+                // Find the position of current event in this process's timeline
+                let eventCountInProcess = 1;
+                for (let j = 0; j < eventsForThisProcess.length; j++) {
+                    if (eventsForThisProcess[j] === events[i]) {
+                        eventCountInProcess = j + 1;
+                        break;
+                    }
+                }
+                
+                const eventLabel = processId + "," + eventCountInProcess;
+                const toadd3 = document.createTextNode(eventLabel);
                 let toadd4 = null;
                 if(testing) {
-                    const ided = "enquirer-" + String(i);
-                    const toadd14 = document.createElement("label");
-                    toadd14.classList.add("lbu");
-                    toadd14.htmlFor = ided;
-                    const toadd15 = document.createTextNode(":[");
-                    toadd14.appendChild(toadd15);
-                    const toadd16 = document.createElement("input");
-                    toadd16.type = "text";
-                    toadd16.value = "";
-                    toadd16.classList.add("enquirer");
-                    toadd16.id = ided;
-                    setInputFilter(toadd16, function(value) {
-                        const test_val = /^[ ]*\d+[ ]*(,[ ]*\d+[ ]*)*,?[ ]*\d*[ ]*$/.test(value)
-                        || value === "";
-                        if(!ticking && test_val) {
-                            window.requestAnimationFrame(() => {
-                                toadd16.setAttribute("size", value.length);
-                                const dims = eventtip.getBoundingClientRect();
-                                const dims2 = eventtip.parentNode.getBoundingClientRect();
-                                eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
-                                ticking = false;
-                            });
-                            ticking = true;
-                        }
-                        return test_val;
+                    // Create input field for vector clock format [a,b,c]
+                    const toadd6 = document.createElement("input");
+                    toadd6.type = "text";
+                    toadd6.value = "";
+                    // Generate placeholder with correct number of zeros based on number of processes
+                    const placeholderZeros = new Array(nodes.length).fill(0).join(',');
+                    toadd6.placeholder = `[${placeholderZeros}]`;
+                    toadd6.classList.add("enquirer-vector");
+                    toadd6.style.width = "80px";
+                    toadd6.style.fontSize = "0.8em";
+                    
+                    // Validate vector clock input format
+                    setInputFilter(toadd6, function(value) {
+                        return /^\[?\d*(,\d*)*\]?$/.test(value) || value === "";
                     });
-                    toadd16.addEventListener("focus", (event) => {
-                        toadd16.setAttribute("size", 
-                            (toadd16.value.length === 0) ? 1 : toadd16.value.length);
-                        const dims = eventtip.getBoundingClientRect();
-                        const dims2 = eventtip.parentNode.getBoundingClientRect();
-                        eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
-                        ticking = false;
-                    });
-                    toadd16.addEventListener("blur", (event) => {
-                        toadd16.setAttribute("size", null);
-                        const dims = eventtip.getBoundingClientRect();
-                        const dims2 = eventtip.parentNode.getBoundingClientRect();
-                        eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
-                    });
-                    const toadd17 = document.createElement("label");
-                    toadd17.classList.add("rbu");
-                    toadd17.htmlFor = ided;
-                    const toadd18 = document.createTextNode("]");
-                    toadd17.appendChild(toadd18);
-                    const toadd19 = document.createElement("sup");
-                    const toadd20 = document.createTextNode("T");
-                    toadd19.appendChild(toadd20);
+                    
                     const toadd12 = document.createElement("div");
                     toadd12.classList.add("flipper");
                     const toadd7 = document.createElement("span");
                     toadd7.classList.add("answerer");
-                    const toadd21 = document.createElement("span");
-                    const toadd22 = document.createTextNode('[');
-                    toadd21.appendChild(toadd22);
-                    const toadd10 = document.createTextNode(event_time.get(events[i]).toString());
+                    const toadd10 = document.createTextNode(String(event_time.get(events[i])));
                     toadd7.appendChild(toadd10);
-                    const toadd23 = document.createElement("span");
-                    const toadd24 = document.createTextNode(']');
-                    toadd23.appendChild(toadd24);
                     const toadd11 = document.createElement("span");
                     toadd11.classList.add("separator");
                     const toadd8 = document.createTextNode('|');
                     toadd11.appendChild(toadd8);
                     toadd12.appendChild(toadd11);
-                    toadd12.appendChild(toadd21);
                     toadd12.appendChild(toadd7);
-                    toadd12.appendChild(toadd23);
-                    toadd12.appendChild(toadd5);
 
                     toadd4 = document.createElement("div");
-                    toadd4.appendChild(toadd14);
-                    toadd4.appendChild(toadd16);
-                    toadd4.appendChild(toadd17);
-                    toadd4.appendChild(toadd19);
+                    toadd4.appendChild(toadd6);
                     toadd4.appendChild(toadd12);
                 }
                 else {
-                    const toadd10 = document.createTextNode(': [' + event_time.get(events[i]).toString() + ']');
-                    toadd4 = document.createElement("span");
-                    toadd4.appendChild(toadd10);
-                    toadd4.appendChild(toadd5);
+                    // In simulation mode, display vector clock nicely
+                    const vectorTime = String(event_time.get(events[i]));
+                    toadd4 = document.createTextNode(': ' + vectorTime);
                 }
-                
-
                 toadd2.appendChild(toadd3);
-                toadd8.appendChild(toadd);
                 toadd8.appendChild(toadd2);
+                eventtip.appendChild(toadd);
                 eventtip.appendChild(toadd8);
                 eventtip.appendChild(toadd4);
-                eventtip.parentNode.style.zIndex = String(4 + events.length - i);
+                eventtip.parentNode.style.zIndex = String(events.length - i);
                 eventtip.addEventListener("click", (event) => {
                     event.stopPropagation();
                     if(!ticking) {
@@ -360,26 +322,54 @@ function updateEventTimes(testing = false) {
                             eventtip.parentNode.style.zIndex = String(current_max_z);
                             ticking = false;
                         });
-                        ticking = true;
-                    }
+                        ticking = true;    
+                    } 
                 }, true);
-                // Adding new time
                 const dims = eventtip.getBoundingClientRect();
                 const dims2 = eventtip.parentNode.getBoundingClientRect();
                 eventtip.style.left = String(- dims.width / 2 + dims2.width / 3) + 'px';
+                // Adding new time
             }
             i--;
         }
         // Modifying DOM which might be observable - request timeout from other events       
     }
+    updating = false;
     return cycleDetect;
 }
 
 // Helper function for drawing lines with arrows in displayspace
 function createArrowLine (event1, event2, startx, starty, gridx, gridy, used_processes, radius) {
-    const event1x = startx + (event_time.get(event1)[event1.p] - 1) * gridx;
+    // Extract position values from vector clocks
+    let pos1 = 1, pos2 = 1;
+    
+    const vector1 = event_time.get(event1);
+    if (typeof vector1 === 'string' && vector1.startsWith('[')) {
+        try {
+            const vectorArray1 = JSON.parse(vector1);
+            pos1 = vectorArray1.reduce((sum, val) => sum + val, 0);
+        } catch (e) {
+            pos1 = 1;
+        }
+    } else {
+        pos1 = parseInt(vector1) || 1;
+    }
+    
+    const vector2 = event_time.get(event2);
+    if (typeof vector2 === 'string' && vector2.startsWith('[')) {
+        try {
+            const vectorArray2 = JSON.parse(vector2);
+            pos2 = vectorArray2.reduce((sum, val) => sum + val, 0);
+        } catch (e) {
+            pos2 = 1;
+        }
+    } else {
+        pos2 = parseInt(vector2) || 1;
+    }
+    
+    const event1x = startx + (pos1 - 1) * gridx;
     const event1y = starty + used_processes.get(event1.p) * gridy;
-    const event2x = startx + (event_time.get(event2)[event2.p] - 1) * gridx;
+    const event2x = startx + (pos2 - 1) * gridx;
     const event2y = starty + used_processes.get(event2.p) * gridy;
     const toadd = document.createElementNS("http://www.w3.org/2000/svg", "g");
     // Graphics group for arrow
@@ -478,15 +468,33 @@ function displayCausalGraph(process = -1, time = -1) {
         }
         const startx = 40;
         const starty = 40;
-        const gridx  = 250;
-        const gridy  = 100;
+        const gridx  = 350;
+        const gridy  = 140;
         const radius = 25;
         let maxx = displayspace.clientWidth + displayspace.scrollWidth;
         let maxy = displayspace.clientHeight + displayspace.scrollHeight;      
         while(lastStack.length > 0) {
             start_event = lastStack.pop();
             // Getting element
-            const myx = startx + (event_time.get(start_event)[start_event.p] - 1) * gridx;
+            
+            // For vector clocks, extract the process's own clock value for positioning
+            let positionValue = 1;  // Default position
+            const vectorString = event_time.get(start_event);
+            if (typeof vectorString === 'string' && vectorString.startsWith('[')) {
+                try {
+                    // Parse vector clock string like "[1,2,3]" and get sum for positioning
+                    const vectorArray = JSON.parse(vectorString);
+                    positionValue = vectorArray.reduce((sum, val) => sum + val, 0);
+                } catch (e) {
+                    // Fallback to process's own component if parsing fails
+                    positionValue = 1;
+                }
+            } else {
+                // Handle old scalar format for backwards compatibility
+                positionValue = parseInt(vectorString) || 1;
+            }
+            
+            const myx = startx + (positionValue - 1) * gridx;
             const myy = starty + used_processes.get(start_event.p) * gridy;
             // Getting position on svg
             if(myx > maxx) {
@@ -555,6 +563,8 @@ function displayCausalGraph(process = -1, time = -1) {
 }
 
 function prepareInputbuttons(mytarget, target2, inmin, inmax) {
+    console.log("prepareInputbuttons called for process:", target2.dataset.process);
+    
     const toadd = document.createElement("div");
     toadd.className = "quantity-nav";
     // Creating bounding boxes for + and - buttons
@@ -563,11 +573,14 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     toadd2.className = "quantity-button quantity-up";
     toadd2.appendChild(document.createTextNode("+"));
     toadd2.addEventListener("click", function(event) {
+        console.log("Plus button clicked for process:", target2.dataset.process);
         if(event.button <= 1 && !ticking) {
             const oldval = parseInt(target2.value);
+            console.log("Current value:", oldval, "Max:", inmax);
             if(oldval < inmax) {
                 target2.value = String(oldval + 1);
                 ticks[target2.dataset.process] += 1;
+                console.log("Updated ticks for process", target2.dataset.process, "to:", ticks[target2.dataset.process]);
                 if(mytarget.getElementsByClassName("event").length > 0) {
                     ticking = true;
                     window.requestAnimationFrame((tim) => {
@@ -584,11 +597,14 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     toadd3.className = "quantity-button quantity-down";
     toadd3.appendChild(document.createTextNode("-"));
     toadd3.addEventListener("click", function(event) {
+        console.log("Minus button clicked for process:", target2.dataset.process);
         if(event.button <= 1 && !ticking) {
             const oldval = parseInt(target2.value);
+            console.log("Current value:", oldval, "Min:", inmin);
             if(oldval > inmin) {
                 target2.value = String(oldval - 1);
                 ticks[target2.dataset.process] -= 1;
+                console.log("Updated ticks for process", target2.dataset.process, "to:", ticks[target2.dataset.process]);
                 if(mytarget.getElementsByClassName("event").length > 0) {
                     ticking = true;
                     window.requestAnimationFrame((tim) => {
@@ -601,12 +617,39 @@ function prepareInputbuttons(mytarget, target2, inmin, inmax) {
     });
     // Creating - button
     
+    setInputFilter(target2, function(value) {
+        return /^\d*$/.test(value) && (value === "" || (
+        parseInt(value) <= inmax &&
+        parseInt(value) >= inmin))
+    });
+    target2.addEventListener('blur', function(event) {
+        if(target2.value === "") {
+            target2.value = target2.min;
+        }
+        // Update ticks array to match input value
+        ticks[target2.dataset.process] = parseInt(target2.value);
+        console.log("Updated ticks array for process", target2.dataset.process, "to:", ticks[target2.dataset.process]);
+    });
+    
+    // Also add an input event listener to keep ticks in sync
+    target2.addEventListener('input', function(event) {
+        if(target2.value !== "") {
+            ticks[target2.dataset.process] = parseInt(target2.value);
+            console.log("Input changed - Updated ticks array for process", target2.dataset.process, "to:", ticks[target2.dataset.process]);
+        }
+    });
+    // Setting up filter
+    
     toadd.appendChild(toadd2);
     toadd.appendChild(toadd3);
     // Adding buttons to container
 
     if (isElement(mytarget)) {
         mytarget.appendChild(toadd);
+        console.log("Added quantity buttons to target. Target class:", mytarget.className);
+        console.log("Button container created with classes:", toadd.className);
+    } else {
+        console.error("mytarget is not a valid element:", mytarget);
     }   
 }
 
@@ -661,6 +704,15 @@ function createEventVisual(target, offsetX, noupdate = false, testing = false) {
     target.appendChild(toadd);
     // Adding element
     const toadd2 = createEvent(roundedX, parseInt(target.dataset.process));
+    console.log(`Creating event: P${parseInt(target.dataset.process)+1} at time ${roundedX} (id: ${toadd2.id})`);
+    
+    // Check for duplicate events at the same position and process
+    const isDuplicate = events.some(e => e.t === toadd2.t && e.p === toadd2.p);
+    if (isDuplicate) {
+        console.warn(`Duplicate event detected: P${toadd2.p+1} at time ${toadd2.t}, not adding`);
+        return [toadd, null];
+    }
+    
     events.push(toadd2);
 
     if(!noupdate) {
@@ -713,16 +765,24 @@ function deleteEventVisual(target, currentTarget, noupdate) {
 }
 
 // Manages event creation and deletion
-// Manages event creation and deletion
 function manageEventVisual(target, offsetX, testing = false) {
+    console.log("manageEventVisual called:", {
+        targetClass: target.className,
+        addMode: addEventsMessage,
+        offsetX: offsetX,
+        testing: testing
+    });
+    
     if (addEventsMessage) {
         if(target.className == "slider-bone") {
+            console.log("Creating event on slider-bone");
             // We don't want one event on top of another for the sake of clarity
             return createEventVisual(target, offsetX, false, testing);
         }
     }
     else {
         if(target.className == "event") {
+            console.log("Deleting event");
             deleteEventVisual(target, target.parentElement);
         }
         else if (
@@ -731,6 +791,7 @@ function manageEventVisual(target, offsetX, testing = false) {
                     return item === "from" || item === "to";
             })
         ) {
+            console.log("Deleting message event");
             // Deleting message and the events on from and to processes if either from or to events of the message is deleted
             const messagelist = messagespace.getElementsByClassName("message");
             for (const message of messagelist) {
@@ -796,17 +857,46 @@ function deleteMessageVisual(event) {
     }
 }
 
-// Creates mesages
+// Creates single events (not messages)
+function createSingleEvent(event) {
+    console.log("createSingleEvent called:", {
+        targetClass: event.target.className,
+        addEventsMessage: addEventsMessage,
+        button: event.button
+    });
+    
+    if (event.button === 0 && addEventsMessage && event.target.className === "slider-bone") {
+        // Only create single event if we're not in the middle of creating a message
+        if (messagestate === 0) {
+            console.log("Creating single event at offsetX:", event.offsetX);
+            manageEventVisual(event.target, event.offsetX);
+            event.stopPropagation();
+            event.preventDefault();
+        }
+    }
+}
+
+// Creates mesages and handles event deletion
 function createMessageVisual(event) {
+    console.log("createMessageVisual called:", {
+        ticking: ticking,
+        button: event.button,
+        targetClass: event.target.className,
+        addEventsMessage: addEventsMessage,
+        messagestate: messagestate
+    });
+    
     if((!ticking)  && event.button < 4) {
         if(event.target.className === "slider-bone" && addEventsMessage) {
             if (!(messagestate === 1)) {
+                console.log("Starting message creation");
                 createMessageViusalGraphics(event.target, event.currentTarget, event.offsetX);
                 messagestate = 1;
             }
             // Signal start of a potential message
         }
         else if ([...event.target.classList].indexOf("event") > -1 && !addEventsMessage) {
+            console.log("Managing event visual in delete mode");
             manageEventVisual(event.target, -1);
         }
     }
@@ -996,6 +1086,16 @@ function createNode(genMode, defaultval=indefault) {
         const node_len = nodes.length;
         // The index of this process
 
+        // Create process label (P1, P2, P3, etc.)
+        const processLabel = document.createElement("span");
+        processLabel.className = "process-label";
+        processLabel.textContent = "P" + (node_len + 1);
+        
+        // Create "d =" indicator
+        const dIndicator = document.createElement("span");
+        dIndicator.className = "d-indicator";
+        dIndicator.textContent = " d = ";
+
         const toadd2 = document.createElement("input");
         toadd2.type = "number";
         toadd2.className = "increment";
@@ -1016,12 +1116,14 @@ function createNode(genMode, defaultval=indefault) {
         toadd3.appendChild(toadd4);
         // Adding straight line representing timeline
         
+        toadd.appendChild(processLabel);
+        toadd.appendChild(dIndicator);
         toadd.appendChild(toadd2);
-        // Adding input to timeline
+        // Adding process label, d indicator, and input to timeline
 
         if(genMode) {
             prepareInputbuttons(toadd, toadd2, inmin, inmax);
-            // Preparing input buttons   
+            // Preparing input buttons        
         }
         else {
             toadd2.tabIndex = "-1";
@@ -1039,10 +1141,7 @@ function createNode(genMode, defaultval=indefault) {
         ticks.push(defaultval);
         // Adding to array of process ticks
 
-        if(genMode) {
-            updateEventTimes();
-        }
-        else {
+        if(!genMode) {
             return toadd4;
         }
     }
@@ -1151,6 +1250,7 @@ function useMode(wrappingforanswers) {
             window.addEventListener("load", windowChange);
             window.addEventListener("resize", windowChange);
 
+            simspace.addEventListener("click", createSingleEvent);
             simspace.addEventListener("mousedown", createMessageVisual);
             simspace.addEventListener("mousemove", dragMessageVisual);
             simspace.addEventListener("mouseleave", endDragMessageVisual);
@@ -1169,6 +1269,7 @@ function useMode(wrappingforanswers) {
             window.removeEventListener("load", windowChange);
             window.removeEventListener("resize", windowChange);
 
+            simspace.removeEventListener("click", createSingleEvent);
             simspace.removeEventListener("mousedown", createMessageVisual);
             simspace.removeEventListener("mousemove", dragMessageVisual);
             simspace.removeEventListener("mouseleave", endDragMessageVisual);
@@ -1233,13 +1334,12 @@ function prepareGeneratorInput(elements) {
 }
 
 function windowChange(event) {
-    const vw = Math.min(Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100, 10);
-    const curwidth    = parseFloat(simspace.style.width.slice(0, -2));
     displayCausalGraph(current_display_p, current_display_t);
-    if (tellspace.clientWidth > mysteryAdjustment(curwidth, vw, max_events_offset)) {
-        simspace.style.width = tellspace.clientWidth.toString() + 'px';
+    // Set a reasonable initial width if not set - use a larger initial canvas
+    if (!simspace.style.width || simspace.style.width === '0px') {
+        simspace.style.width = Math.max(tellspace.clientWidth * 2, 1200).toString() + 'px';
     }
-    // Try to take up all available screen width
+    // Getting position of simspace for use everywhere
     simpos = getPosition(simspace);
     // Getting position of simspace for use everywhere
     window.requestAnimationFrame(function() {
@@ -1284,10 +1384,10 @@ async function generator(event) {
     const event_number = parseInt(document.getElementById("events-gen").value);
     const messages_number = parseInt(document.getElementById("messages-gen").value);
     const tell_width = tellspace.getBoundingClientRect().width;
-    const event_padding = tell_width / 10.15;
+    const event_padding = tell_width / 11.0;  // Increased from 14.2 to 8.0 for more spacing
     const event_offset = [];
     for(let i = 0; i < process_number; ++i) {
-        event_offset.push(event_padding / 2 + Math.random() * event_padding);
+        event_offset.push(event_padding / 2 + Math.random() * event_padding * 1.5);  // Increased random offset multiplier
     }
     const message_set = new Set();
     let max_ticks = 1;
@@ -1315,12 +1415,23 @@ async function generator(event) {
         }
         max_time = (max_time > event_offset[eve.p] + eve.t) ? max_time : (event_offset[eve.p] + eve.t);
     }
+    simspace.width = String(max_time + 5 * event_padding) + 'px';
     const throttler = new Semaphore(1);
     const all_at_once = function(sliderBones, simspace, e1, e2, event_offset, process_number) {
         const off1 = event_offset[e1.p] + e1.t;
         const off2 = event_offset[e2.p] + e2.t;
-        createMessageViusalGraphics(sliderBones[e1.p], simspace, off1, true);
-        finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, off2, true);
+        
+        // Ensure message arrow goes from left to right (earlier time to later time)
+        if (off1 <= off2) {
+            // e1 is earlier or same time, so e1 -> e2
+            createMessageViusalGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
+            finishDragMessageVisualGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+        } else {
+            // e2 is earlier, so e2 -> e1
+            createMessageViusalGraphics(sliderBones[e2.p], simspace, event_offset[e2.p] + e2.t, true);
+            finishDragMessageVisualGraphics(sliderBones[e1.p], simspace, event_offset[e1.p] + e1.t, true);
+        }
+        
         return (off1 > off2) ? off1 : off2;
     }
     for(const mes of outed.mes) {
@@ -1352,39 +1463,30 @@ function checkAnswers(event) {
     }
 }
 
-function answerToArray(answer) {
-    const without_whitespace = answer.replaceAll(' ','');
-    return without_whitespace.split(',').map(Number);
-}
-
 function checkLogic() {
     const tips = document.querySelectorAll("span.event-tip");
     let wrong = false;
     for(const tip of tips) {
-        const useranswer = tip.querySelector("input[type=text].enquirer");
+        const useranswer = tip.querySelector("input.enquirer-vector");
         const correctanswer = tip.querySelector("span.answerer");
         const flipper = tip.querySelector("div.flipper");
-        const user_array = answerToArray(useranswer.value);
-        const correct_array = answerToArray(correctanswer.textContent);
-        let local_wrong = false;
-        const declareWrong = () => {
-            correctanswer.classList.add("wrong");
-            wrong = true;
-            local_wrong = true;
-        };
-        if(user_array.length === correct_array.length) {
-            for(let i = 0; i < user_array.length; ++i) {
-                if(user_array[i] !== correct_array[i]) {
-                    declareWrong();
-                    break;
-                }
-            }
+        
+        // Normalize both user input and correct answer for comparison
+        let userValue = useranswer.value.trim();
+        let correctValue = correctanswer.textContent.trim();
+        
+        // Add brackets if missing from user input
+        if (userValue && !userValue.startsWith('[')) {
+            userValue = '[' + userValue + ']';
+        }
+        
+        // Compare normalized values
+        if(userValue === correctValue) {
+            correctanswer.classList.add("correct");
         }
         else {
-            declareWrong();
-        }
-        if(! local_wrong) {
-            correctanswer.classList.add("correct");
+            correctanswer.classList.add("wrong");
+            wrong = true;
         }
         flipper.classList.add("answered");
         const dims = tip.getBoundingClientRect();
@@ -1455,11 +1557,12 @@ window.addEventListener("resize", windowChange);
 tellspace.addEventListener("scroll", (event) => {manageTime();});
 // Calling function for dynamically resizing element with maximum scrolls
 
+simspace.addEventListener("click", createSingleEvent);
 simspace.addEventListener("mousedown", createMessageVisual);
 simspace.addEventListener("mousemove", dragMessageVisual);
 simspace.addEventListener("mouseleave", endDragMessageVisual);
 simspace.addEventListener("mouseup", finishDragMessageVisual);
-// Listening for events leading to creation of a message
+// Listening for events leading to creation of events and messages
 
 document.getElementById("plus").addEventListener("click", createNodePlus);
 document.getElementById("minus").addEventListener("click", deleteNodeMinus);
@@ -1488,4 +1591,69 @@ check_answers.addEventListener("click", checkAnswers);
 
 speed.addEventListener("click", upgradeDifficulty);
 // Upgrade difficulty
+
+// Instructions Modal Handling
+const instructionsBtn = document.getElementById("instructionsBtn");
+const instructionsModal = document.getElementById("instructionsModal");
+const closeInstructions = document.getElementById("closeInstructions");
+
+function showInstructions() {
+    instructionsModal.style.display = "flex";
+}
+
+function hideInstructions() {
+    instructionsModal.style.display = "none";
+}
+
+instructionsBtn.addEventListener("click", showInstructions);
+closeInstructions.addEventListener("click", hideInstructions);
+
+// Close modal when clicking outside of it
+instructionsModal.addEventListener("click", function(event) {
+    if (event.target === instructionsModal) {
+        hideInstructions();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape" && instructionsModal.style.display !== "none" && instructionsModal.style.display !== "") {
+        hideInstructions();
+    }
+});
+
 updateModes();
+
+// Initialize the simulation with default processes
+function initializeSimulation() {
+    // Create 3 default processes for simulation mode if none exist
+    if (nodes.length === 0 && mode === 0) {
+        console.log("Initializing simulation with default processes...");
+        for (let i = 0; i < 3; i++) {
+            createNodePlus();
+        }
+        console.log("Created", nodes.length, "processes");
+        
+        // Debug: Check if slider-bone elements were created properly
+        const sliderBones = document.querySelectorAll('.slider-bone');
+        console.log("Found", sliderBones.length, "slider-bone elements");
+        sliderBones.forEach((bone, index) => {
+            console.log(`Process ${index}: dataset.process =`, bone.dataset.process);
+        });
+    }
+    // Trigger window change to set up positions
+    windowChange();
+    console.log("Simulation initialized");
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initializeSimulation, 100);
+});
+
+// Also initialize immediately in case DOM is already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSimulation);
+} else {
+    setTimeout(initializeSimulation, 100);
+}
