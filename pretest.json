@@ -1,0 +1,158 @@
+{
+  "version": 2.0,
+  "questions": [
+    {
+      "question": "In a distributed system with n processes, what is the size of each vector timestamp?",
+      "answers": {
+        "a": "n elements",
+        "b": "2n elements",
+        "c": "n<sup>2</sup> elements",
+        "d": "log(n) elements"
+      },
+       "explanations": {
+        "a": "Correct. Each process maintains one clock value for every process in the system, resulting in n elements",
+        "b": "Incorrect. Only n elements are needed, one for each process",
+        "c": "Incorrect. This would be unnecessarily large and inefficient",
+        "d": "Incorrect. This would not provide enough information about all processes"
+      },
+      "correctAnswer": "a",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "Vector logical clocks can be used to",
+      "answers": {
+        "a": "Totally order events by themselves",
+        "b": "Can only establish Partial Ordering",
+        "c": "Can be used along with arbitrary tiebreaks to establish partial ordering",
+        "d": "Can be used to establish causal ordering"
+      },
+      "explanations": {
+        "a": "Incorrect. It is possible for two events to have no causal connection to the other. Ordering is indeterminate in this case",
+        "b": "Incorrect. It is possible for concurrent events to be ordered by another metric to establish total order",
+        "c": "Incorrect. Concurrent events may be arbitrarily ordered for a total ordering",
+        "d": "Correct. Vector clocks establish ordering between causally connected events"
+      },
+      "correctAnswer": "d",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "What is the primary advantage of vector clocks over scalar logical clocks?",
+      "answers": {
+        "a": "They use less memory",
+        "b": "They are faster to compute",
+        "c": "They can determine causal relationships between events",
+        "d": "They provide exact physical timestamps"
+      },
+      "explanations": {
+        "a": "Incorrect. Vector clocks use more memory as they maintain a vector of size n",
+        "b": "Incorrect. Vector clocks require more computation due to vector operations",
+        "c": "Correct. Vector clocks can determine if events are causally related or concurrent, which scalar clocks cannot",
+        "d": "Incorrect. Vector clocks are logical, not physical timestamps"
+      },
+      "correctAnswer": "c",
+      "difficulty": "beginner"
+    },
+    {
+      "question": "When a process sends a message using vector clocks, what should it do with its vector timestamp?",
+      "answers": {
+        "a": "Reset it to zero before sending",
+        "b": "Increment its own component, then attach the vector to the message",
+        "c": "Send only its own component value",
+        "d": "Attach the vector without modification"
+      },
+      "explanations": {
+        "a": "Incorrect. Resetting would lose all causal history information",
+        "b": "Correct. The process first increments its own clock component, then includes the entire vector in the message",
+        "c": "Incorrect. The complete vector containing all process components must be sent to convey causal information",
+        "d": "Incorrect. The process must increment its own component before sending to reflect the send event"
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "When a process receives a message in vector logical clocks, how does it update its vector?",
+      "answers": {
+        "a": "It copies the sender's vector completely",
+        "b": "It takes the maximum of each component and increments its own",
+        "c": "It adds the sender's vector to its own",
+        "d": "It only increments its own component"
+      },
+      "explanations": {
+        "a": "Incorrect. This would lose information about the receiver's own progress",
+        "b": "Correct. For each component i, clock[i] = max(local_clock[i], message_clock[i]), then increment own component",
+        "c": "Incorrect. Addition would not maintain the proper ordering semantics",
+        "d": "Incorrect. This would ignore the causal information carried by the message"
+      },
+      "correctAnswer": "b",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "What happens to a process's own clock component when it performs a local event?",
+      "answers": {
+        "a": "It remains unchanged",
+        "b": "It is set to the maximum of all components",
+        "c": "It is incremented by the process's tick value",
+        "d": "It is reset to zero"
+      },
+      "explanations": {
+        "a": "Incorrect. Local events must advance the local clock to maintain monotonicity",
+        "b": "Incorrect. Only the process's own component is affected during local events",
+        "c": "Correct. Each process increments its own clock component by its designated increment value (tick)",
+        "d": "Incorrect. Resetting would violate the monotonic property of logical clocks"
+      },
+      "correctAnswer": "c",
+      "difficulty": "intermediate"
+    },
+    {
+      "question": "For two vector timestamps V_a and V_b, when can we say V_a < V_b (V_a happens before V_b)?",
+      "answers": {
+        "a": "When all components of V_a are less than corresponding components of V_b",
+        "b": "When V_a[i] ≤ V_b[i] for all i, and V_a ≠ V_b",
+        "c": "When the sum of V_a components is less than sum of V_b components",
+        "d": "When the first component of V_a is less than first component of V_b"
+      },
+      "explanations": {
+        "a": "Incorrect. The condition allows for equal components, not strictly less than",
+        "b": "Correct. V_a < V_b when V_a[i] ≤ V_b[i] for all i, and at least one component is strictly less",
+        "c": "Incorrect. Component-wise comparison is needed, not sum comparison",
+        "d": "Incorrect. All components must satisfy the ordering condition, not just the first"
+      },
+      "correctAnswer": "b",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "What does it mean when two events have vector timestamps that are incomparable (neither V_a < V_b nor V_b < V_a)?",
+      "answers": {
+        "a": "The events occurred at the same physical time",
+        "b": "One of the vector clocks is incorrect",
+        "c": "The events are concurrent (causally unrelated)",
+        "d": "There is a deadlock in the system"
+      },
+      "explanations": {
+        "a": "Incorrect. Vector clocks represent logical time, not physical time",
+        "b": "Incorrect. Incomparable vectors are a valid and important case in distributed systems",
+        "c": "Correct. When neither vector dominates the other, the events are concurrent and have no causal relationship",
+        "d": "Incorrect. Concurrent events are normal in distributed systems and don't indicate deadlock"
+      },
+      "correctAnswer": "c",
+      "difficulty": "advanced"
+    },
+    {
+      "question": "In the context of vector clocks, what is the significance of the 'happens before' relation being transitive?",
+      "answers": {
+        "a": "It allows for efficient storage of timestamps",
+        "b": "It ensures that causal dependencies are preserved across multiple message hops",
+        "c": "It reduces the computational complexity of clock updates",
+        "d": "It guarantees that all events can be totally ordered"
+      },
+      "explanations": {
+        "a": "Incorrect. Transitivity affects logical relationships, not storage efficiency",
+        "b": "Correct. If A→B and B→C, then A→C ensures that causal chains are properly maintained in distributed computations",
+        "c": "Incorrect. Transitivity is a logical property, not a computational optimization",
+        "d": "Incorrect. Transitivity of happens-before doesn't eliminate concurrent events that prevent total ordering"
+      },
+      "correctAnswer": "b",
+      "difficulty": "advanced"
+    }
+  ]
+}
